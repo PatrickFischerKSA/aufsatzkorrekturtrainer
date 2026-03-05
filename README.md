@@ -12,10 +12,15 @@ Interaktive Lern- und Feedbackumgebung mit drei Nutzungsszenarien:
 - Bewertungsraster mit Pflichtbegründungen pro Kriterium
 - automatische Teilnote sprachliche Korrektheit nach Excel-Schlüssel (Stufe 1-4, mit/ohne Korrekturprogramm)
 - KI-Korrektur für `Inhalt`, `Aufbau`, `Ausdruck`
+- verpflichtende manuelle Erstkorrektur für freie Aufsätze vor der AI-Analyse
+- direkte Vergleichsansicht `manuell vs. AI` je Kriterium inklusive Delta
 - Beurteilungslevels: `therapeutisch`, `mild`, `moderat`, `anspruchsvoll`, `streng`, `brutal`
 - Kontrastscore gegenüber moderatem Bewertungslevel
 - Klassenliste mit Mehrfach-Upload und tabellarischer Klassenübersicht
 - Export von Einzel- und Klassenberichten als Markdown
+- zuschaltbarer Betriebsmodus:
+  - `Lokal/abgeschottet` (kein externer KI-Versand)
+  - `Voller Internetzugang` (API-KI und externe Quellen möglich)
 
 ## Start lokal (ohne API, lokale KI)
 
@@ -28,6 +33,13 @@ Alternativ via statischem Server:
 cd aufsatzkorrekturtrainer
 python3 -m http.server 8080
 ```
+
+Für Datenschutzbetrieb:
+
+1. In `ai-korrektur.html` den Betriebsmodus auf `Lokal/abgeschottet` lassen.
+2. Keine API-Aufrufe werden ausgeführt.
+3. Für PDF-Verarbeitung lokal: `vendor/pdf.min.js` und `vendor/pdf.worker.min.js` bereitstellen.
+   Siehe: `vendor/README.md`
 
 ## Start lokal (mit API-KI)
 
@@ -44,6 +56,7 @@ npm start
 ```
 
 5. Browser öffnen: `http://localhost:8080/ai-korrektur.html`
+6. In der Oberfläche den Betriebsmodus auf `Voller Internetzugang` stellen.
 
 API-Endpunkte:
 
@@ -58,6 +71,13 @@ Im Klassenbereich von `ai-korrektur.html` kannst du:
 2. pro Person einen Aufsatz als TXT/PDF einlesen,
 3. eine Sammelkorrektur für alle Texte starten,
 4. Ergebnisse als Klassenbericht exportieren.
+
+## Vergleichsworkflow bei freien Aufsätzen
+
+1. Text einfügen oder Datei laden.
+2. Manuelle Korrektur für Inhalt/Aufbau/Ausdruck ausfüllen und speichern.
+3. Erst danach AI-Korrektur starten.
+4. Vergleichstabelle mit Differenzen zwischen manueller und AI-Note auswerten.
 
 ## Einsatz im Unterricht
 

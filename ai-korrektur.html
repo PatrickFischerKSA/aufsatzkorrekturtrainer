@@ -4,12 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Aufsatzkorrekturtrainer | KI-Uploadmodus</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -33,6 +27,22 @@
         <h2>Einzelkorrektur</h2>
 
         <form id="ai-form" novalidate>
+          <fieldset class="language-box">
+            <legend>Betriebsmodus</legend>
+            <div class="field-grid engine-grid">
+              <label>
+                Datenschutz / Netzwerk
+                <select id="runtime-mode">
+                  <option value="local" selected>Lokal/abgeschottet (kein externer Versand)</option>
+                  <option value="internet">Voller Internetzugang (API + externe Quellen)</option>
+                </select>
+              </label>
+            </div>
+            <p class="hint" id="runtime-status">
+              Lokalmodus aktiv: keine externen KI-Aufrufe, nur lokale Verarbeitung.
+            </p>
+          </fieldset>
+
           <fieldset class="language-box">
             <legend>Bewertungsengine</legend>
             <div class="field-grid engine-grid">
@@ -71,7 +81,21 @@
             ></textarea>
           </label>
 
-          <h3>Beurteilungslevels</h3>
+          <h3>1. Manuelle Korrektur (Pflicht vor AI)</h3>
+          <p class="hint">
+            Korrigiere den Aufsatz zuerst wie eine Lehrperson. Erst danach wird die KI-Korrektur
+            freigeschaltet, damit ein echter Vergleich möglich ist.
+          </p>
+          <div id="manual-criteria" class="criteria-container"></div>
+          <div class="actions">
+            <button type="button" id="save-manual" class="primary-btn">
+              Manuelle Korrektur speichern
+            </button>
+          </div>
+          <p class="hint" id="manual-status">Noch keine manuelle Korrektur gespeichert.</p>
+          <div id="manual-summary" class="ai-metrics" hidden></div>
+
+          <h3>2. AI-Korrektur (Vergleich)</h3>
           <p class="hint">
             Die Levels steuern Tonalität und Strenge der KI-Rückmeldung je Kriterium.
           </p>
@@ -115,7 +139,9 @@
           </div>
 
           <div class="actions">
-            <button type="submit" class="primary-btn">KI-Korrektur starten</button>
+            <button type="submit" id="run-ai" class="primary-btn" disabled>
+              KI-Korrektur starten
+            </button>
             <button type="button" class="secondary-btn" id="download-ai" disabled>
               KI-Bericht herunterladen
             </button>
@@ -132,6 +158,12 @@
         <section class="results" id="ai-results" hidden>
           <h3>Bewertung nach Kriterien</h3>
           <div id="ai-cards" class="criteria-feedback"></div>
+
+          <h3>Vergleich: Manuell vs. AI</h3>
+          <div id="comparison-block" hidden>
+            <div id="comparison-table" class="table-wrap"></div>
+            <div id="comparison-feedback" class="criteria-feedback"></div>
+          </div>
         </section>
       </section>
 
@@ -169,8 +201,6 @@
         eine automatisierte KI-Korrektur und Klassensteuerung.
       </p>
     </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.min.js"></script>
     <script src="ai-korrektur.js"></script>
   </body>
 </html>

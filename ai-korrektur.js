@@ -44,24 +44,53 @@ const LEVEL_CONFIG = {
 };
 
 const CRITERIA = [
-  { id: "inhalt", label: "Inhalt" },
-  { id: "aufbau", label: "Aufbau" },
-  { id: "ausdruck", label: "Ausdruck" },
+  {
+    id: "inhalt",
+    label: "Inhalt",
+    weight: 0.4,
+    guide: "These, Argumenttiefe, Beispiele, gedankliche Stimmigkeit",
+  },
+  {
+    id: "aufbau",
+    label: "Aufbau",
+    weight: 0.3,
+    guide: "Einleitung-Hauptteil-Schluss, rote Linie, Übergänge",
+  },
+  {
+    id: "ausdruck",
+    label: "Ausdruck",
+    weight: 0.3,
+    guide: "Wortwahl, Satzbau, Präzision, Stilniveau",
+  },
 ];
 
 const API_ENDPOINT = "/api/ai-review";
 const API_HEALTH_ENDPOINT = "/api/health";
+const PDF_CDN_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.min.js";
+const PDF_CDN_WORKER_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js";
+const PDF_LOCAL_URL = "/vendor/pdf.min.js";
+const PDF_LOCAL_WORKER_URL = "/vendor/pdf.worker.min.js";
 
 const aiForm = document.getElementById("ai-form");
+const runtimeModeInput = document.getElementById("runtime-mode");
+const runtimeStatus = document.getElementById("runtime-status");
 const engineModeInput = document.getElementById("engine-mode");
 const apiStatus = document.getElementById("api-status");
 const fileInput = document.getElementById("essay-file");
 const parseButton = document.getElementById("parse-file");
 const parseStatus = document.getElementById("parse-status");
 const essayInput = document.getElementById("essay-input");
+const manualCriteriaContainer = document.getElementById("manual-criteria");
+const saveManualButton = document.getElementById("save-manual");
+const manualStatus = document.getElementById("manual-status");
+const manualSummary = document.getElementById("manual-summary");
+const runAiButton = document.getElementById("run-ai");
 const resultsSection = document.getElementById("ai-results");
 const cardsContainer = document.getElementById("ai-cards");
 const metricsContainer = document.getElementById("ai-metrics");
+const comparisonBlock = document.getElementById("comparison-block");
+const comparisonTable = document.getElementById("comparison-table");
+const comparisonFeedback = document.getElementById("comparison-feedback");
 const downloadButton = document.getElementById("download-ai");
 
 const addStudentButton = document.getElementById("add-student");
@@ -75,21 +104,25 @@ const classDetailsContainer = document.getElementById("class-details");
 
 let latestAiReport = null;
 let latestClassReport = null;
+let manualEvaluation = null;
+let manualDirty = true;
 let studentCounter = 0;
+let runtimeMode = "local";
+let pdfLibrarySource = null;
 let apiHealth = {
   reachable: false,
   configured: false,
   model: null,
 };
 
-if (window.pdfjsLib) {
-  window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js";
-}
-
 parseButton.addEventListener("click", parseSingleFile);
 aiForm.addEventListener("submit", runAiCorrection);
+saveManualButton.addEventListener("click", saveManualEvaluation);
 downloadButton.addEventListener("click", downloadSingleReport);
+essayInput.addEventListener("input", markManualAsDirty);
+runtimeModeInput.addEventListener("change", handleRuntimeModeChange);
+manualCriteriaContainer.addEventListener("input", markManualFormChanged);
+manualCriteriaContainer.addEventListener("change", markManualFormChanged);
 
 addStudentButton.addEventListener("click", () => addStudentRow());
 evaluateClassButton.addEventListener("click", evaluateClassroom);
@@ -97,6 +130,12 @@ downloadClassButton.addEventListener("click", downloadClassReport);
 studentList.addEventListener("click", handleStudentListClick);
 
 engineModeInput.addEventListener("change", () => {
+  if (runtimeMode === "local" && engineModeInput.value === "api") {
+    engineModeInput.value = "local";
+    parseStatus.textContent = "Im Lokalmodus ist nur lokale KI erlaubt.";
+    return;
+  }
+
   if (engineModeInput.value === "api" && (!apiHealth.reachable || !apiHealth.configured)) {
     parseStatus.textContent = "API-Modus gewählt, aber nicht bereit. Es wird bei Bedarf lokal analysiert.";
   }
@@ -105,8 +144,12 @@ engineModeInput.addEventListener("change", () => {
 init();
 
 async function init() {
+  buildManualCriteriaCards();
+  applyRuntimeMode(runtimeModeInput.value);
   addStudentRow();
-  await checkApiHealth();
+  if (runtimeMode === "internet") {
+    await checkApiHealth();
+  }
 }
 
 async function checkApiHealth() {
@@ -143,6 +186,166 @@ async function checkApiHealth() {
   }
 }
 
+async function handleRuntimeModeChange() {
+  applyRuntimeMode(runtimeModeInput.value);
+  if (runtimeMode === "internet") {
+    await checkApiHealth();
+  } else {
+    apiStatus.textContent =
+      "Im Lokalmodus werden keine externen KI-Endpunkte aufgerufen. API bleibt deaktiviert.";
+  }
+}
+
+function applyRuntimeMode(mode) {
+  runtimeMode = mode === "internet" ? "internet" : "local";
+
+  const apiOption = engineModeInput.querySelector('option[value="api"]');
+  if (runtimeMode === "local") {
+    if (apiOption) apiOption.disabled = true;
+    engineModeInput.value = "local";
+    runtimeStatus.textContent =
+      "Lokalmodus aktiv: keine externen KI-Aufrufe. Verarbeitung bleibt lokal (heuristisch oder lokaler Endpoint).";
+  } else {
+    if (apiOption) apiOption.disabled = false;
+    runtimeStatus.textContent =
+      "Internetmodus aktiv: API-KI und externe Bibliotheken sind erlaubt.";
+  }
+}
+
+function buildManualCriteriaCards() {
+  const gradeOptions = buildGradeOptions();
+  manualCriteriaContainer.innerHTML = CRITERIA.map(
+    (criterion) => `
+      <article class="criterion">
+        <div class="criterion-head">
+          <h3>${criterion.label}</h3>
+          <span class="weight">Gewicht: ${criterion.weight}</span>
+        </div>
+        <p class="hint">${criterion.guide}</p>
+        <label>
+          Teilnote ${criterion.label}
+          <select data-manual-grade="${criterion.id}">
+            <option value="">Bitte wählen</option>
+            ${gradeOptions}
+          </select>
+        </label>
+        <label>
+          Begründung (mind. 80 Zeichen)
+          <textarea
+            data-manual-comment="${criterion.id}"
+            minlength="80"
+            placeholder="Begründe die Teilnote mit konkreten Beobachtungen aus dem Aufsatz."
+          ></textarea>
+        </label>
+      </article>
+    `,
+  ).join("");
+}
+
+function buildGradeOptions() {
+  const options = [];
+  for (let value = 6; value >= 1; value -= 0.25) {
+    const label = formatGrade(value);
+    options.push(`<option value="${value.toFixed(2)}">${label}</option>`);
+  }
+  return options.join("");
+}
+
+function markManualAsDirty() {
+  manualDirty = true;
+  runAiButton.disabled = true;
+  downloadButton.disabled = true;
+  comparisonBlock.hidden = true;
+  resultsSection.hidden = true;
+  manualStatus.textContent =
+    "Text wurde geändert. Bitte manuelle Korrektur erneut speichern, bevor die AI startet.";
+}
+
+function markManualFormChanged() {
+  if (!manualEvaluation) return;
+  manualDirty = true;
+  runAiButton.disabled = true;
+  downloadButton.disabled = true;
+  comparisonBlock.hidden = true;
+  resultsSection.hidden = true;
+  manualStatus.textContent =
+    "Manuelle Eingaben wurden geändert. Bitte erneut speichern, damit der Vergleich mit AI aktuell bleibt.";
+}
+
+function saveManualEvaluation() {
+  clearManualInvalidMarkers();
+
+  const text = essayInput.value.trim();
+  if (text.length < 200) {
+    essayInput.classList.add("invalid");
+    manualStatus.textContent =
+      "Bitte zuerst einen Aufsatztext einfügen (mindestens ca. 200 Zeichen) und dann manuell korrigieren.";
+    return;
+  }
+
+  const criteria = [];
+  let hasErrors = false;
+
+  for (const criterion of CRITERIA) {
+    const gradeField = manualCriteriaContainer.querySelector(`[data-manual-grade="${criterion.id}"]`);
+    const commentField = manualCriteriaContainer.querySelector(`[data-manual-comment="${criterion.id}"]`);
+    const grade = Number.parseFloat(gradeField.value);
+    const comment = commentField.value.trim();
+
+    if (Number.isNaN(grade)) {
+      hasErrors = true;
+      gradeField.classList.add("invalid");
+    }
+
+    if (comment.length < 80) {
+      hasErrors = true;
+      commentField.classList.add("invalid");
+    }
+
+    criteria.push({
+      id: criterion.id,
+      label: criterion.label,
+      weight: criterion.weight,
+      grade: Number.isNaN(grade) ? 0 : grade,
+      comment,
+    });
+  }
+
+  if (hasErrors) {
+    manualStatus.textContent =
+      "Bitte alle Teilnoten setzen und jede Begründung mit mindestens 80 Zeichen ausformulieren.";
+    return;
+  }
+
+  const weightedAverage = criteria.reduce((sum, item) => sum + item.grade * item.weight, 0);
+  manualEvaluation = {
+    createdAt: new Date(),
+    textSnapshot: text,
+    criteria,
+    weightedAverage,
+  };
+  manualDirty = false;
+  runAiButton.disabled = false;
+
+  manualStatus.textContent =
+    "Manuelle Korrektur gespeichert. Du kannst jetzt die AI-Korrektur starten und direkt vergleichen.";
+  manualSummary.hidden = false;
+  manualSummary.innerHTML = `
+    <div class="feedback-card">
+      <h4>Manuelle Basisbewertung</h4>
+      <p><strong>Gewichtete Note:</strong> ${formatGrade(weightedAverage)}</p>
+      <p>${criteria
+        .map((item) => `${item.label}: ${formatGrade(item.grade)}`)
+        .join(" | ")}</p>
+    </div>
+  `;
+}
+
+function clearManualInvalidMarkers() {
+  manualCriteriaContainer.querySelectorAll(".invalid").forEach((field) => field.classList.remove("invalid"));
+  essayInput.classList.remove("invalid");
+}
+
 async function parseSingleFile() {
   const file = fileInput.files?.[0];
   if (!file) {
@@ -155,6 +358,7 @@ async function parseSingleFile() {
   try {
     const text = await readSupportedFile(file);
     essayInput.value = text.trim();
+    markManualAsDirty();
     parseStatus.textContent = `Datei erfolgreich eingelesen (${countWords(text)} Wörter erkannt).`;
   } catch (error) {
     parseStatus.textContent = `Fehler beim Einlesen: ${error.message}`;
@@ -173,9 +377,7 @@ async function readSupportedFile(file) {
 }
 
 async function readPdfFile(file) {
-  if (!window.pdfjsLib) {
-    throw new Error("PDF-Parser konnte nicht geladen werden.");
-  }
+  await ensurePdfJsLibrary();
 
   const data = await file.arrayBuffer();
   const pdf = await window.pdfjsLib.getDocument({ data }).promise;
@@ -191,6 +393,67 @@ async function readPdfFile(file) {
   return pages.join("\n\n");
 }
 
+async function ensurePdfJsLibrary() {
+  if (window.pdfjsLib) {
+    configurePdfWorker();
+    return;
+  }
+
+  if (runtimeMode === "internet") {
+    await loadScript(PDF_CDN_URL);
+    pdfLibrarySource = "cdn";
+    configurePdfWorker();
+    return;
+  }
+
+  try {
+    await loadScript(PDF_LOCAL_URL);
+    pdfLibrarySource = "local";
+    configurePdfWorker();
+  } catch {
+    throw new Error(
+      "PDF-Verarbeitung im Lokalmodus benötigt lokale Dateien unter /vendor/pdf.min.js und /vendor/pdf.worker.min.js.",
+    );
+  }
+}
+
+function configurePdfWorker() {
+  if (!window.pdfjsLib) return;
+  if (pdfLibrarySource === "cdn") {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_CDN_WORKER_URL;
+    return;
+  }
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_LOCAL_WORKER_URL;
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[data-dynamic-src="${src}"]`);
+    if (existing) {
+      if (existing.dataset.loaded === "1") {
+        resolve();
+        return;
+      }
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error(`Script konnte nicht geladen werden: ${src}`)), {
+        once: true,
+      });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.dataset.dynamicSrc = src;
+    script.addEventListener("load", () => {
+      script.dataset.loaded = "1";
+      resolve();
+    });
+    script.addEventListener("error", () => reject(new Error(`Script konnte nicht geladen werden: ${src}`)));
+    document.head.appendChild(script);
+  });
+}
+
 async function runAiCorrection(event) {
   event.preventDefault();
 
@@ -202,6 +465,13 @@ async function runAiCorrection(event) {
   }
   essayInput.classList.remove("invalid");
 
+  if (!manualEvaluation || manualDirty || manualEvaluation.textSnapshot !== text) {
+    parseStatus.textContent =
+      "Bitte zuerst die manuelle Korrektur für den aktuellen Text speichern. Danach wird die AI-Korrektur freigeschaltet.";
+    runAiButton.disabled = true;
+    return;
+  }
+
   const levelSelection = getLevelSelection();
   const requestedEngine = engineModeInput.value;
 
@@ -212,10 +482,12 @@ async function runAiCorrection(event) {
 
     renderMetrics(evaluation.metrics, levelSelection, evaluation);
     renderCards(evaluation.criteria);
+    renderComparison(evaluation.criteria);
 
     latestAiReport = {
       createdAt: new Date(),
       text,
+      manual: manualEvaluation,
       metrics: evaluation.metrics,
       criteria: evaluation.criteria,
       levelSelection,
@@ -243,8 +515,9 @@ async function runAiCorrection(event) {
 
 async function evaluateEssay(text, levelSelection, requestedEngine, context = {}) {
   const metrics = computeGlobalMetrics(text);
+  const effectiveEngine = runtimeMode === "local" ? "local" : requestedEngine;
 
-  if (requestedEngine === "api") {
+  if (effectiveEngine === "api") {
     if (apiHealth.reachable && apiHealth.configured) {
       const apiResult = await evaluateViaApi(text, levelSelection, context);
       return {
@@ -269,7 +542,10 @@ async function evaluateEssay(text, levelSelection, requestedEngine, context = {}
   const localResult = evaluateLocal(text, levelSelection);
   return {
     source: "local",
-    summary: "Lokale heuristische KI-Bewertung.",
+    summary:
+      runtimeMode === "local"
+        ? "Lokale heuristische KI-Bewertung (abgeschotteter Modus)."
+        : "Lokale heuristische KI-Bewertung.",
     criteria: localResult.criteria,
     metrics,
   };
@@ -413,6 +689,94 @@ function renderCards(criteria) {
     .join("");
 }
 
+function renderComparison(aiCriteria) {
+  if (!manualEvaluation) {
+    comparisonBlock.hidden = true;
+    return;
+  }
+
+  const rows = CRITERIA.map((criterion) => {
+    const manual = manualEvaluation.criteria.find((item) => item.id === criterion.id);
+    const ai = aiCriteria.find((item) => item.id === criterion.id);
+    const delta = (ai?.score || 0) - (manual?.grade || 0);
+    const trend =
+      Math.abs(delta) < 0.01
+        ? "gleich"
+        : delta > 0
+          ? "AI höher"
+          : "AI strenger";
+
+    return {
+      label: criterion.label,
+      manual: manual?.grade || 0,
+      ai: ai?.score || 0,
+      delta,
+      trend,
+      manualComment: manual?.comment || "",
+      aiHint: ai?.nextStep || "",
+    };
+  });
+
+  const manualAvg = manualEvaluation.weightedAverage;
+  const aiAvg = rows.reduce((sum, row) => {
+    const weight = CRITERIA.find((criterion) => criterion.label === row.label)?.weight || 0;
+    return sum + row.ai * weight;
+  }, 0);
+  const overallDelta = aiAvg - manualAvg;
+
+  comparisonTable.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Kriterium</th>
+          <th>Manuell</th>
+          <th>AI</th>
+          <th>Delta</th>
+          <th>Tendenz</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows
+          .map(
+            (row) => `
+          <tr>
+            <td>${escapeHtml(row.label)}</td>
+            <td>${formatGrade(row.manual)}</td>
+            <td>${formatGrade(row.ai)}</td>
+            <td>${row.delta >= 0 ? "+" : ""}${formatGrade(row.delta)}</td>
+            <td>${escapeHtml(row.trend)}</td>
+          </tr>
+        `,
+          )
+          .join("")}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th>Gesamt (gewichtet)</th>
+          <th>${formatGrade(manualAvg)}</th>
+          <th>${formatGrade(aiAvg)}</th>
+          <th>${overallDelta >= 0 ? "+" : ""}${formatGrade(overallDelta)}</th>
+          <th>${Math.abs(overallDelta) < 0.01 ? "gleich" : overallDelta > 0 ? "AI höher" : "AI strenger"}</th>
+        </tr>
+      </tfoot>
+    </table>
+  `;
+
+  comparisonFeedback.innerHTML = rows
+    .map(
+      (row) => `
+      <article class="feedback-card">
+        <h4>${escapeHtml(row.label)}</h4>
+        <p><strong>Manuelle Begründung:</strong> ${escapeHtml(row.manualComment)}</p>
+        <p><strong>AI-Impuls für Überarbeitung:</strong> ${escapeHtml(row.aiHint)}</p>
+      </article>
+    `,
+    )
+    .join("");
+
+  comparisonBlock.hidden = false;
+}
+
 function addStudentRow(initialData = {}) {
   studentCounter += 1;
   const studentId = `student-${studentCounter}`;
@@ -429,7 +793,7 @@ function addStudentRow(initialData = {}) {
     <div class="field-grid student-grid">
       <label>
         Name
-        <input type="text" class="student-name" placeholder="z. B. Lina Meier" value="${escapeHtml(initialData.name || "")}" />
+        <input type="text" class="student-name" placeholder="z. B. Patrick Fischer" value="${escapeHtml(initialData.name || "")}" />
       </label>
       <label>
         Datei (.txt/.pdf)
@@ -910,17 +1274,24 @@ function downloadSingleReport() {
   lines.push("# KI-Korrekturbericht (Einzelmodus)");
   lines.push("");
   lines.push(`- Datum: ${latestAiReport.createdAt.toLocaleString("de-CH")}`);
+  lines.push(`- Betriebsmodus: ${runtimeMode === "local" ? "lokal/abgeschottet" : "internet"}`);
   lines.push(`- Engine: ${latestAiReport.source}${latestAiReport.model ? ` (${latestAiReport.model})` : ""}`);
   lines.push(`- Wörter: ${latestAiReport.metrics.wordCount}`);
   lines.push(`- Sätze: ${latestAiReport.metrics.sentenceCount}`);
   lines.push(`- Absätze: ${latestAiReport.metrics.paragraphCount}`);
+  lines.push(`- Manuelle Ausgangsnote (gewichtet): ${formatGrade(latestAiReport.manual.weightedAverage)}`);
   if (latestAiReport.warning) lines.push(`- Hinweis: ${latestAiReport.warning}`);
   lines.push("");
 
   latestAiReport.criteria.forEach((criterion) => {
+    const manual = latestAiReport.manual.criteria.find((item) => item.id === criterion.id);
+    const delta = criterion.score - (manual?.grade || 0);
     lines.push(`## ${criterion.label}`);
+    lines.push(`- Manuelle Teilnote: ${formatGrade(manual?.grade || 0)}`);
+    lines.push(`- Manuelle Begründung: ${manual?.comment || ""}`);
     lines.push(`- Level: ${criterion.level}`);
     lines.push(`- KI-Score: ${formatGrade(criterion.score)}`);
+    lines.push(`- Delta zu manuell: ${delta >= 0 ? "+" : ""}${formatGrade(delta)}`);
     lines.push(`- Kontrastscore (moderat): ${formatGrade(criterion.moderateScore)}`);
     lines.push(`- Stärken: ${criterion.strengths.join(" ")}`);
     lines.push(`- Baustellen: ${criterion.gaps.join(" ")}`);
@@ -942,6 +1313,7 @@ function downloadClassReport() {
   lines.push("# Klassenbericht KI-Korrektur");
   lines.push("");
   lines.push(`- Datum: ${latestClassReport.createdAt.toLocaleString("de-CH")}`);
+  lines.push(`- Betriebsmodus: ${runtimeMode === "local" ? "lokal/abgeschottet" : "internet"}`);
   lines.push(`- Engine-Wunsch: ${latestClassReport.requestedEngine}`);
   lines.push(
     `- Levels: Inhalt ${latestClassReport.levelSelection.inhalt}, Aufbau ${latestClassReport.levelSelection.aufbau}, Ausdruck ${latestClassReport.levelSelection.ausdruck}`,
