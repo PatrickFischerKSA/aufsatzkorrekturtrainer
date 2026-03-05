@@ -57,6 +57,11 @@ body {
   color: var(--ink-soft);
 }
 
+.inline-link {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 h1,
 h2,
 h3,
@@ -142,6 +147,15 @@ textarea {
   gap: 0.7rem;
 }
 
+.engine-grid {
+  grid-template-columns: 1fr;
+}
+
+.ai-upload-grid {
+  grid-template-columns: 2fr 1fr;
+  align-items: end;
+}
+
 .field-grid label,
 .global-justification,
 .criterion label,
@@ -208,6 +222,74 @@ textarea,
 textarea {
   min-height: 110px;
   resize: vertical;
+}
+
+.ai-text {
+  min-height: 280px;
+}
+
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.classroom-panel {
+  grid-column: 1 / -1;
+}
+
+.class-actions {
+  flex-wrap: wrap;
+}
+
+.student-list {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+.student-row {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.9rem;
+  background: #fffef8;
+}
+
+.student-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.student-head h3 {
+  margin-bottom: 0.5rem;
+}
+
+.student-grid {
+  grid-template-columns: 1.3fr 1.3fr 0.6fr;
+  align-items: end;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+}
+
+.table-wrap th,
+.table-wrap td {
+  border: 1px solid var(--line);
+  padding: 0.5rem 0.55rem;
+  text-align: left;
+}
+
+.table-wrap th {
+  background: #f4faf8;
 }
 
 .hint,
@@ -324,6 +406,10 @@ input.invalid {
     grid-template-columns: 1fr;
   }
 
+  .ai-upload-grid {
+    grid-template-columns: 1fr;
+  }
+
   .essay {
     max-height: 50vh;
   }
@@ -331,9 +417,14 @@ input.invalid {
 
 @media (max-width: 680px) {
   .field-grid,
+  .level-grid,
   .aspect-grid,
   .actions {
     grid-template-columns: 1fr;
     flex-direction: column;
+  }
+
+  .student-grid {
+    grid-template-columns: 1fr;
   }
 }

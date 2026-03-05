@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aufsatzkorrekturtrainer | KI-Uploadmodus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="background-glow" aria-hidden="true"></div>
+
+    <header class="page-header">
+      <p class="eyebrow">Variante 2 | KI-gestützte Korrektur</p>
+      <h1>Freier Aufsatz-Upload + Klassenmodus</h1>
+      <p>
+        Lade beliebige Aufsätze als TXT/PDF hoch oder führe eine Sammelkorrektur für eine ganze
+        Klasse durch. Die Bewertung erfolgt für Inhalt, Aufbau und Ausdruck mit frei wählbarer
+        Strenge von therapeutisch bis brutal.
+      </p>
+      <p>
+        <a href="index.html" class="inline-link">Zur Max-Frisch-Variante wechseln</a>
+      </p>
+    </header>
+
+    <main class="layout ai-layout">
+      <section class="panel">
+        <h2>Einzelkorrektur</h2>
+
+        <form id="ai-form" novalidate>
+          <fieldset class="language-box">
+            <legend>Bewertungsengine</legend>
+            <div class="field-grid engine-grid">
+              <label>
+                Modus
+                <select id="engine-mode">
+                  <option value="local">Lokale KI (offline heuristisch)</option>
+                  <option value="api">API-KI (LLM-Backend)</option>
+                </select>
+              </label>
+            </div>
+            <p class="hint" id="api-status">
+              API-Status wird geprüft...
+            </p>
+          </fieldset>
+
+          <div class="field-grid ai-upload-grid">
+            <label>
+              Aufsatzdatei (.txt oder .pdf)
+              <input id="essay-file" type="file" accept=".txt,.pdf,application/pdf,text/plain" />
+            </label>
+            <button id="parse-file" class="secondary-btn" type="button">Datei einlesen</button>
+          </div>
+
+          <p class="hint" id="parse-status">
+            Hinweis: Bei PDF wird der Text lokal im Browser extrahiert (kein Cloud-Upload).
+          </p>
+
+          <label>
+            Aufsatztext (editierbar)
+            <textarea
+              id="essay-input"
+              class="ai-text"
+              required
+              placeholder="Füge hier den Aufsatz ein oder lies eine Datei ein."
+            ></textarea>
+          </label>
+
+          <h3>Beurteilungslevels</h3>
+          <p class="hint">
+            Die Levels steuern Tonalität und Strenge der KI-Rückmeldung je Kriterium.
+          </p>
+
+          <div class="level-grid">
+            <label>
+              Inhalt
+              <select id="level-inhalt" required>
+                <option value="therapeutisch">therapeutisch</option>
+                <option value="mild">mild</option>
+                <option value="moderat" selected>moderat</option>
+                <option value="anspruchsvoll">anspruchsvoll</option>
+                <option value="streng">streng</option>
+                <option value="brutal">brutal</option>
+              </select>
+            </label>
+
+            <label>
+              Aufbau
+              <select id="level-aufbau" required>
+                <option value="therapeutisch">therapeutisch</option>
+                <option value="mild">mild</option>
+                <option value="moderat" selected>moderat</option>
+                <option value="anspruchsvoll">anspruchsvoll</option>
+                <option value="streng">streng</option>
+                <option value="brutal">brutal</option>
+              </select>
+            </label>
+
+            <label>
+              Ausdruck
+              <select id="level-ausdruck" required>
+                <option value="therapeutisch">therapeutisch</option>
+                <option value="mild">mild</option>
+                <option value="moderat" selected>moderat</option>
+                <option value="anspruchsvoll">anspruchsvoll</option>
+                <option value="streng">streng</option>
+                <option value="brutal">brutal</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="primary-btn">KI-Korrektur starten</button>
+            <button type="button" class="secondary-btn" id="download-ai" disabled>
+              KI-Bericht herunterladen
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>KI-Auswertung</h2>
+        <div class="ai-metrics" id="ai-metrics">
+          <p>Noch keine Analyse gestartet.</p>
+        </div>
+
+        <section class="results" id="ai-results" hidden>
+          <h3>Bewertung nach Kriterien</h3>
+          <div id="ai-cards" class="criteria-feedback"></div>
+        </section>
+      </section>
+
+      <section class="panel classroom-panel">
+        <h2>Klassenliste & Mehrfach-Uploads</h2>
+        <p class="hint">
+          Lege mehrere Schüler*innen an, lade pro Person einen Aufsatz hoch und starte eine
+          Sammelkorrektur mit denselben Levels und derselben Engine.
+        </p>
+
+        <div class="actions class-actions">
+          <button type="button" id="add-student" class="secondary-btn">Schüler*in hinzufügen</button>
+          <button type="button" id="evaluate-class" class="primary-btn">Klassenkorrektur starten</button>
+          <button type="button" id="download-class" class="secondary-btn" disabled>
+            Klassenbericht herunterladen
+          </button>
+        </div>
+
+        <p id="class-status" class="hint">Noch keine Klassenkorrektur gestartet.</p>
+
+        <div id="student-list" class="student-list"></div>
+
+        <section id="class-results" class="results" hidden>
+          <h3>Klassenübersicht</h3>
+          <div id="class-table" class="table-wrap"></div>
+          <h3>Detailfeedback je Schüler*in</h3>
+          <div id="class-details" class="criteria-feedback"></div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <p>
+        Kontrastmodus: Diese Variante ergänzt die lehrpersonenbasierte Max-Frisch-Auswertung durch
+        eine automatisierte KI-Korrektur und Klassensteuerung.
+      </p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.min.js"></script>
+    <script src="ai-korrektur.js"></script>
+  </body>
+</html>
