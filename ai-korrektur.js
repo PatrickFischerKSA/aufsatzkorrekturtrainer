@@ -64,6 +64,49 @@ const CRITERIA = [
   },
 ];
 
+const ARGUMENTATION_BENCHMARK = [
+  {
+    id: "these",
+    label: "Klare These",
+    patterns: [/\bthese\b/i, /\bposition\b/i, /\bstandpunkt\b/i, /\bkernaussage\b/i],
+  },
+  {
+    id: "begruendung",
+    label: "Begründungslogik",
+    patterns: [/\bweil\b/i, /\bdaher\b/i, /\bdeshalb\b/i, /\bsomit\b/i, /\bfolglich\b/i, /\bdenn\b/i],
+  },
+  {
+    id: "beleg",
+    label: "Textbeleg / Beispiel",
+    patterns: [/\bbeispiel\b/i, /\bstelle\b/i, /\bzitat\b/i, /\babsatz\b/i, /\bim text\b/i, /„|“|\"|«|»/],
+  },
+  {
+    id: "einwand",
+    label: "Einwand / Gegenposition",
+    patterns: [/\bjedoch\b/i, /\ballerdings\b/i, /\bhingegen\b/i, /\bandererseits\b/i, /\bgegenargument\b/i],
+  },
+  {
+    id: "entkraeftung",
+    label: "Entkräftung / Abwägung",
+    patterns: [/\bdennoch\b/i, /\btrotzdem\b/i, /\büberwiegt\b/i, /\bgewichtet\b/i, /\babwäg/i],
+  },
+  {
+    id: "schluss",
+    label: "Schlussfolgerung",
+    patterns: [/\binsgesamt\b/i, /\babschließend\b/i, /\bfazit\b/i, /\bschluss\b/i],
+  },
+  {
+    id: "logik",
+    label: "Logische Kohärenz",
+    patterns: [/\bwiderspruch\b/i, /\bstimmig\b/i, /\broter faden\b/i, /\bfolgerichtig\b/i],
+  },
+  {
+    id: "fairness",
+    label: "Faire, kriterienspezifische Sprache",
+    patterns: [/\bkriterium\b/i, /\bdifferenziert\b/i, /\bstärke\b/i, /\bschwäche\b/i, /\bangemessen\b/i],
+  },
+];
+
 const API_ENDPOINT = "/api/ai-review";
 const API_HEALTH_ENDPOINT = "/api/health";
 const PDF_CDN_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.min.js";
@@ -84,6 +127,9 @@ const manualCriteriaContainer = document.getElementById("manual-criteria");
 const saveManualButton = document.getElementById("save-manual");
 const manualStatus = document.getElementById("manual-status");
 const manualSummary = document.getElementById("manual-summary");
+const benchmarkSummary = document.getElementById("benchmark-summary");
+const partnerHeading = document.getElementById("partner-heading");
+const manualPartnerFeedback = document.getElementById("manual-partner-feedback");
 const runAiButton = document.getElementById("run-ai");
 const resultsSection = document.getElementById("ai-results");
 const cardsContainer = document.getElementById("ai-cards");
@@ -256,6 +302,9 @@ function markManualAsDirty() {
   runAiButton.disabled = true;
   downloadButton.disabled = true;
   comparisonBlock.hidden = true;
+  partnerHeading.hidden = true;
+  benchmarkSummary.hidden = true;
+  manualPartnerFeedback.hidden = true;
   resultsSection.hidden = true;
   manualStatus.textContent =
     "Text wurde geändert. Bitte manuelle Korrektur erneut speichern, bevor die AI startet.";
@@ -267,6 +316,9 @@ function markManualFormChanged() {
   runAiButton.disabled = true;
   downloadButton.disabled = true;
   comparisonBlock.hidden = true;
+  partnerHeading.hidden = true;
+  benchmarkSummary.hidden = true;
+  manualPartnerFeedback.hidden = true;
   resultsSection.hidden = true;
   manualStatus.textContent =
     "Manuelle Eingaben wurden geändert. Bitte erneut speichern, damit der Vergleich mit AI aktuell bleibt.";
@@ -318,10 +370,20 @@ function saveManualEvaluation() {
   }
 
   const weightedAverage = criteria.reduce((sum, item) => sum + item.grade * item.weight, 0);
+  const benchmark = criteria.map((item) => evaluateCorrectionByBenchmark(item));
+  const partnerFeedback = criteria.map((item) =>
+    buildPartnerComment(item, benchmark.find((entry) => entry.id === item.id)),
+  );
+  const benchmarkScore =
+    benchmark.reduce((sum, entry) => sum + entry.score * (CRITERIA.find((c) => c.id === entry.id)?.weight || 0), 0);
+
   manualEvaluation = {
     createdAt: new Date(),
     textSnapshot: text,
     criteria,
+    benchmark,
+    benchmarkScore,
+    partnerFeedback,
     weightedAverage,
   };
   manualDirty = false;
@@ -339,11 +401,130 @@ function saveManualEvaluation() {
         .join(" | ")}</p>
     </div>
   `;
+
+  benchmarkSummary.hidden = false;
+  benchmarkSummary.innerHTML = `
+    <div class="feedback-card">
+      <h4>Gradmesser Korrektheit der Korrektur (Argumentationslehre)</h4>
+      <p><strong>Gesamtscore:</strong> ${formatGrade(benchmarkScore)} / 6</p>
+      <p>${benchmark
+        .map((entry) => `${entry.label}: ${formatGrade(entry.score)} (${entry.level})`)
+        .join(" | ")}</p>
+    </div>
+  `;
+
+  manualPartnerFeedback.hidden = false;
+  partnerHeading.hidden = false;
+  manualPartnerFeedback.innerHTML = partnerFeedback
+    .map(
+      (item) => `
+    <article class="feedback-card">
+      <h4>KI-Partner: ${escapeHtml(item.label)}</h4>
+      <p><strong>Argumentationslehre-Score:</strong> ${formatGrade(item.benchmark?.score || 0)} / 6 (${escapeHtml(
+        item.benchmark?.level || "nicht berechnet",
+      )})</p>
+      <p><strong>Erfüllt:</strong> ${escapeHtml((item.benchmark?.fulfilled || []).join(", ") || "—")}</p>
+      <p><strong>Fehlt:</strong> ${escapeHtml((item.benchmark?.missing || []).join(", ") || "—")}</p>
+      <p><strong>Was schon stark ist:</strong> ${escapeHtml(item.strength)}</p>
+      <p><strong>Was noch unklar bleibt:</strong> ${escapeHtml(item.gap)}</p>
+      <p><strong>Partnerfrage:</strong> ${escapeHtml(item.question)}</p>
+      <p><strong>Nächster Satzvorschlag:</strong> ${escapeHtml(item.nextSentence)}</p>
+    </article>
+  `,
+    )
+    .join("");
 }
 
 function clearManualInvalidMarkers() {
   manualCriteriaContainer.querySelectorAll(".invalid").forEach((field) => field.classList.remove("invalid"));
   essayInput.classList.remove("invalid");
+}
+
+function evaluateCorrectionByBenchmark(criterionEvaluation) {
+  const text = criterionEvaluation.comment || "";
+  const fulfilled = [];
+  const missing = [];
+
+  for (const item of ARGUMENTATION_BENCHMARK) {
+    const hit = item.patterns.some((pattern) => pattern.test(text));
+    if (hit) fulfilled.push(item.label);
+    else missing.push(item.label);
+  }
+
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  const depthBonus = words >= 60 ? 0.5 : words >= 40 ? 0.25 : 0;
+  const base = (fulfilled.length / ARGUMENTATION_BENCHMARK.length) * 6;
+  const score = clamp(roundQuarter(base + depthBonus), 1, 6);
+
+  return {
+    id: criterionEvaluation.id,
+    label: criterionEvaluation.label,
+    score,
+    level: benchmarkLevel(score),
+    fulfilled,
+    missing: missing.slice(0, 4),
+  };
+}
+
+function benchmarkLevel(score) {
+  if (score >= 5) return "sehr tragfähig";
+  if (score >= 4) return "solide";
+  if (score >= 3) return "teilweise tragfähig";
+  return "kritisch";
+}
+
+function buildPartnerComment(criterionEvaluation, benchmark) {
+  const text = criterionEvaluation.comment.toLowerCase();
+  const words = text.split(/\s+/).filter(Boolean).length;
+  const hasEvidence = /(beispiel|stelle|zitat|absatz|im text|konkret)/i.test(criterionEvaluation.comment);
+  const hasReasoning = /(weil|daher|deshalb|somit|folglich|jedoch|allerdings)/i.test(criterionEvaluation.comment);
+  const hasBalance =
+    /(stark|gelungen|präzis|überzeugend|klar)/i.test(criterionEvaluation.comment) &&
+    /(schwach|unklar|mangel|problem|bruch|wenig)/i.test(criterionEvaluation.comment);
+
+  const criterionQuestions = {
+    inhalt: "Welche zentrale These des Aufsatzes trägt deine Teilnote am stärksten und warum genau diese?",
+    aufbau: "An welcher Übergangsstelle kippt der rote Faden am deutlichsten?",
+    ausdruck: "Welche konkrete Formulierung würdest du sprachlich umschreiben, um Präzision zu gewinnen?",
+  };
+
+  const strengthParts = [];
+  const gapParts = [];
+
+  if (words >= 40) strengthParts.push("Deine Begründung hat eine gute inhaltliche Tiefe.");
+  else gapParts.push("Die Begründung ist noch zu knapp; präzisiere mindestens zwei Beobachtungen.");
+
+  if (hasEvidence) strengthParts.push("Du arbeitest textnah und argumentierst nicht nur allgemein.");
+  else gapParts.push("Führe mindestens eine konkrete Textstelle als Beleg an.");
+
+  if (hasReasoning) strengthParts.push("Die Begründungslogik ist nachvollziehbar aufgebaut.");
+  else gapParts.push("Verknüpfe Urteil und Begründung klarer (z. B. mit weil, daher, somit).");
+
+  if (!hasBalance) gapParts.push("Gewichte Stärken und Schwächen explizit gegeneinander.");
+
+  const gradeHint =
+    criterionEvaluation.grade >= 5
+      ? "Die hohe Teilnote wirkt plausibel, wenn du sie noch stärker an Belegen absicherst."
+      : criterionEvaluation.grade >= 4
+        ? "Die mittlere Teilnote ist nachvollziehbar; mit präziseren Beispielen wird sie belastbarer."
+        : "Die kritische Teilnote ist begründbar, wenn du die Hauptmängel klar priorisierst.";
+
+  return {
+    id: criterionEvaluation.id,
+    label: criterionEvaluation.label,
+    strength: `${strengthParts.join(" ")} ${gradeHint} ${
+      benchmark ? `Gradmesser: ${benchmark.level} (${formatGrade(benchmark.score)}/6).` : ""
+    }`.trim(),
+    gap:
+      gapParts.join(" ") ||
+      (benchmark?.missing?.length
+        ? `Für noch mehr Korrektheit ergänze: ${benchmark.missing.join(", ")}.`
+        : "Die Begründung ist bereits ausgewogen und konkret."),
+    question: criterionQuestions[criterionEvaluation.id] || "Welcher Einzelbeleg stützt dein Urteil am stärksten?",
+    nextSentence:
+      "Ich bewerte diese Stelle so, weil [konkreter Beleg], was im Kriterium [Inhalt/Aufbau/Ausdruck] zu [Auswirkung] führt.",
+    benchmark,
+  };
 }
 
 async function parseSingleFile() {
@@ -697,6 +878,7 @@ function renderComparison(aiCriteria) {
 
   const rows = CRITERIA.map((criterion) => {
     const manual = manualEvaluation.criteria.find((item) => item.id === criterion.id);
+    const benchmark = manualEvaluation.benchmark.find((item) => item.id === criterion.id);
     const ai = aiCriteria.find((item) => item.id === criterion.id);
     const delta = (ai?.score || 0) - (manual?.grade || 0);
     const trend =
@@ -713,6 +895,9 @@ function renderComparison(aiCriteria) {
       delta,
       trend,
       manualComment: manual?.comment || "",
+      benchmarkScore: benchmark?.score || 0,
+      benchmarkLevel: benchmark?.level || "",
+      benchmarkMissing: benchmark?.missing || [],
       aiHint: ai?.nextStep || "",
     };
   });
@@ -732,6 +917,7 @@ function renderComparison(aiCriteria) {
           <th>Manuell</th>
           <th>AI</th>
           <th>Delta</th>
+          <th>Gradmesser</th>
           <th>Tendenz</th>
         </tr>
       </thead>
@@ -744,6 +930,7 @@ function renderComparison(aiCriteria) {
             <td>${formatGrade(row.manual)}</td>
             <td>${formatGrade(row.ai)}</td>
             <td>${row.delta >= 0 ? "+" : ""}${formatGrade(row.delta)}</td>
+            <td>${formatGrade(row.benchmarkScore)} (${escapeHtml(row.benchmarkLevel)})</td>
             <td>${escapeHtml(row.trend)}</td>
           </tr>
         `,
@@ -768,6 +955,7 @@ function renderComparison(aiCriteria) {
       <article class="feedback-card">
         <h4>${escapeHtml(row.label)}</h4>
         <p><strong>Manuelle Begründung:</strong> ${escapeHtml(row.manualComment)}</p>
+        <p><strong>Gradmesser-Lücke:</strong> ${escapeHtml(row.benchmarkMissing.join(", ") || "Keine zentrale Lücke.")}</p>
         <p><strong>AI-Impuls für Überarbeitung:</strong> ${escapeHtml(row.aiHint)}</p>
       </article>
     `,
@@ -1280,15 +1468,26 @@ function downloadSingleReport() {
   lines.push(`- Sätze: ${latestAiReport.metrics.sentenceCount}`);
   lines.push(`- Absätze: ${latestAiReport.metrics.paragraphCount}`);
   lines.push(`- Manuelle Ausgangsnote (gewichtet): ${formatGrade(latestAiReport.manual.weightedAverage)}`);
+  lines.push(
+    `- Gradmesser Korrektur-Korrektheit (Argumentationslehre): ${formatGrade(latestAiReport.manual.benchmarkScore)} / 6`,
+  );
   if (latestAiReport.warning) lines.push(`- Hinweis: ${latestAiReport.warning}`);
   lines.push("");
 
   latestAiReport.criteria.forEach((criterion) => {
     const manual = latestAiReport.manual.criteria.find((item) => item.id === criterion.id);
+    const partner = latestAiReport.manual.partnerFeedback.find((item) => item.id === criterion.id);
+    const benchmark = latestAiReport.manual.benchmark.find((item) => item.id === criterion.id);
     const delta = criterion.score - (manual?.grade || 0);
     lines.push(`## ${criterion.label}`);
     lines.push(`- Manuelle Teilnote: ${formatGrade(manual?.grade || 0)}`);
     lines.push(`- Manuelle Begründung: ${manual?.comment || ""}`);
+    lines.push(`- Gradmesser-Score: ${formatGrade(benchmark?.score || 0)} / 6 (${benchmark?.level || ""})`);
+    lines.push(`- Gradmesser erfüllt: ${(benchmark?.fulfilled || []).join(", ")}`);
+    lines.push(`- Gradmesser fehlt: ${(benchmark?.missing || []).join(", ")}`);
+    lines.push(`- KI-Partner (Stärke): ${partner?.strength || ""}`);
+    lines.push(`- KI-Partner (Lücke): ${partner?.gap || ""}`);
+    lines.push(`- KI-Partner (Frage): ${partner?.question || ""}`);
     lines.push(`- Level: ${criterion.level}`);
     lines.push(`- KI-Score: ${formatGrade(criterion.score)}`);
     lines.push(`- Delta zu manuell: ${delta >= 0 ? "+" : ""}${formatGrade(delta)}`);

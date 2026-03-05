@@ -14,6 +14,8 @@ Interaktive Lern- und Feedbackumgebung mit drei Nutzungsszenarien:
 - KI-Korrektur für `Inhalt`, `Aufbau`, `Ausdruck`
 - verpflichtende manuelle Erstkorrektur für freie Aufsätze vor der AI-Analyse
 - direkte Vergleichsansicht `manuell vs. AI` je Kriterium inklusive Delta
+- KI-Partnerkommentar zur manuellen Korrektur (Stärke, Lücke, Partnerfrage, Satzvorschlag)
+- Argumentationslehre-Gradmesser für Korrektur-Korrektheit (These, Begründung, Beleg, Einwand, Entkräftung, Schluss, Logik, Fairness)
 - Beurteilungslevels: `therapeutisch`, `mild`, `moderat`, `anspruchsvoll`, `streng`, `brutal`
 - Kontrastscore gegenüber moderatem Bewertungslevel
 - Klassenliste mit Mehrfach-Upload und tabellarischer Klassenübersicht
@@ -98,5 +100,6 @@ Begleitmaterial: [`AUFGABE.md`](AUFGABE.md)
 
 - Aufsatztext aus: `Max Frisch_Maturaufsatz.docx`
 - Fehlerschlüssel aus: `GYM  FMS Berechnung sprachliche Korrektheit Aufsatznote ab 01.xlsx`
+- Gradmesser Korrekturqualität: `Argumentationslehre.pdf`
 
 Die Excel-Logik für sprachliche Korrektheit wurde technisch in JavaScript übernommen (Schwellenwert-Matching entsprechend der Tabellen).
