@@ -53,16 +53,209 @@ const CRITERIA = [
   {
     id: "aufbau",
     label: "Aufbau",
-    weight: 0.3,
+    weight: 0.2,
     guide: "Einleitung-Hauptteil-Schluss, rote Linie, Übergänge",
   },
   {
     id: "ausdruck",
     label: "Ausdruck",
-    weight: 0.3,
+    weight: 0.2,
     guide: "Wortwahl, Satzbau, Präzision, Stilniveau",
   },
 ];
+
+const ORTHOGRAPHY = {
+  id: "sprachliche-korrektheit",
+  label: "Sprachliche Korrektheit (Excel)",
+  weight: 0.2,
+};
+
+const LANGUAGE_TABLES = {
+  "1": [
+    { errorsPer200: 1, grade: 6 },
+    { errorsPer200: 1.75, grade: 5.75 },
+    { errorsPer200: 2.5, grade: 5.5 },
+    { errorsPer200: 3.25, grade: 5.25 },
+    { errorsPer200: 4, grade: 5 },
+    { errorsPer200: 4.75, grade: 4.75 },
+    { errorsPer200: 5.5, grade: 4.5 },
+    { errorsPer200: 6.25, grade: 4.25 },
+    { errorsPer200: 7, grade: 4 },
+    { errorsPer200: 7.75, grade: 3.75 },
+    { errorsPer200: 8.5, grade: 3.5 },
+    { errorsPer200: 9.25, grade: 3.25 },
+    { errorsPer200: 10, grade: 3 },
+    { errorsPer200: 10.75, grade: 2.75 },
+    { errorsPer200: 11.5, grade: 2.5 },
+    { errorsPer200: 12.25, grade: 2.25 },
+    { errorsPer200: 13, grade: 2 },
+    { errorsPer200: 13.75, grade: 1.75 },
+    { errorsPer200: 14.5, grade: 1.5 },
+    { errorsPer200: 15.25, grade: 1.25 },
+    { errorsPer200: 16, grade: 1 },
+  ],
+  "2": [
+    { errorsPer200: 1, grade: 6 },
+    { errorsPer200: 1.625, grade: 5.75 },
+    { errorsPer200: 2.25, grade: 5.5 },
+    { errorsPer200: 2.875, grade: 5.25 },
+    { errorsPer200: 3.5, grade: 5 },
+    { errorsPer200: 4.125, grade: 4.75 },
+    { errorsPer200: 4.75, grade: 4.5 },
+    { errorsPer200: 5.375, grade: 4.25 },
+    { errorsPer200: 6, grade: 4 },
+    { errorsPer200: 6.625, grade: 3.75 },
+    { errorsPer200: 7.25, grade: 3.5 },
+    { errorsPer200: 7.875, grade: 3.25 },
+    { errorsPer200: 8.5, grade: 3 },
+    { errorsPer200: 9.125, grade: 2.75 },
+    { errorsPer200: 9.75, grade: 2.5 },
+    { errorsPer200: 10.375, grade: 2.25 },
+    { errorsPer200: 11, grade: 2 },
+    { errorsPer200: 11.625, grade: 1.75 },
+    { errorsPer200: 12.25, grade: 1.5 },
+    { errorsPer200: 12.875, grade: 1.25 },
+    { errorsPer200: 13.5, grade: 1 },
+  ],
+  "3": [
+    { errorsPer200: 1, grade: 6 },
+    { errorsPer200: 1.5, grade: 5.75 },
+    { errorsPer200: 2, grade: 5.5 },
+    { errorsPer200: 2.5, grade: 5.25 },
+    { errorsPer200: 3, grade: 5 },
+    { errorsPer200: 3.5, grade: 4.75 },
+    { errorsPer200: 4, grade: 4.5 },
+    { errorsPer200: 4.5, grade: 4.25 },
+    { errorsPer200: 5, grade: 4 },
+    { errorsPer200: 5.5, grade: 3.75 },
+    { errorsPer200: 6, grade: 3.5 },
+    { errorsPer200: 6.5, grade: 3.25 },
+    { errorsPer200: 7, grade: 3 },
+    { errorsPer200: 7.5, grade: 2.75 },
+    { errorsPer200: 8, grade: 2.5 },
+    { errorsPer200: 8.5, grade: 2.25 },
+    { errorsPer200: 9, grade: 2 },
+    { errorsPer200: 9.5, grade: 1.75 },
+    { errorsPer200: 10, grade: 1.5 },
+    { errorsPer200: 10.5, grade: 1.25 },
+    { errorsPer200: 11, grade: 1 },
+  ],
+  "4": [
+    { errorsPer200: 1, grade: 6 },
+    { errorsPer200: 1.375, grade: 5.75 },
+    { errorsPer200: 1.75, grade: 5.5 },
+    { errorsPer200: 2.125, grade: 5.25 },
+    { errorsPer200: 2.5, grade: 5 },
+    { errorsPer200: 2.875, grade: 4.75 },
+    { errorsPer200: 3.25, grade: 4.5 },
+    { errorsPer200: 3.625, grade: 4.25 },
+    { errorsPer200: 4, grade: 4 },
+    { errorsPer200: 4.375, grade: 3.75 },
+    { errorsPer200: 4.75, grade: 3.5 },
+    { errorsPer200: 5.125, grade: 3.25 },
+    { errorsPer200: 5.5, grade: 3 },
+    { errorsPer200: 5.875, grade: 2.75 },
+    { errorsPer200: 6.25, grade: 2.5 },
+    { errorsPer200: 6.625, grade: 2.25 },
+    { errorsPer200: 7, grade: 2 },
+    { errorsPer200: 7.375, grade: 1.75 },
+    { errorsPer200: 7.75, grade: 1.5 },
+    { errorsPer200: 8.125, grade: 1.25 },
+    { errorsPer200: 8.5, grade: 1 },
+  ],
+  "1_m_KP": [
+    { errorsPer200: 0.5, grade: 6 },
+    { errorsPer200: 1.125, grade: 5.75 },
+    { errorsPer200: 1.75, grade: 5.5 },
+    { errorsPer200: 2.375, grade: 5.25 },
+    { errorsPer200: 3, grade: 5 },
+    { errorsPer200: 3.625, grade: 4.75 },
+    { errorsPer200: 4.25, grade: 4.5 },
+    { errorsPer200: 4.875, grade: 4.25 },
+    { errorsPer200: 5.5, grade: 4 },
+    { errorsPer200: 6.125, grade: 3.75 },
+    { errorsPer200: 6.75, grade: 3.5 },
+    { errorsPer200: 7.375, grade: 3.25 },
+    { errorsPer200: 8, grade: 3 },
+    { errorsPer200: 8.625, grade: 2.75 },
+    { errorsPer200: 9.25, grade: 2.5 },
+    { errorsPer200: 9.875, grade: 2.25 },
+    { errorsPer200: 10.5, grade: 2 },
+    { errorsPer200: 11.125, grade: 1.75 },
+    { errorsPer200: 11.75, grade: 1.5 },
+    { errorsPer200: 12.375, grade: 1.25 },
+    { errorsPer200: 13, grade: 1 },
+  ],
+  "2_m_KP": [
+    { errorsPer200: 0.5, grade: 6 },
+    { errorsPer200: 1, grade: 5.75 },
+    { errorsPer200: 1.5, grade: 5.5 },
+    { errorsPer200: 2, grade: 5.25 },
+    { errorsPer200: 2.5, grade: 5 },
+    { errorsPer200: 3, grade: 4.75 },
+    { errorsPer200: 3.5, grade: 4.5 },
+    { errorsPer200: 4, grade: 4.25 },
+    { errorsPer200: 4.5, grade: 4 },
+    { errorsPer200: 5, grade: 3.75 },
+    { errorsPer200: 5.5, grade: 3.5 },
+    { errorsPer200: 6, grade: 3.25 },
+    { errorsPer200: 6.5, grade: 3 },
+    { errorsPer200: 7, grade: 2.75 },
+    { errorsPer200: 7.5, grade: 2.5 },
+    { errorsPer200: 8, grade: 2.25 },
+    { errorsPer200: 8.5, grade: 2 },
+    { errorsPer200: 9, grade: 1.75 },
+    { errorsPer200: 9.5, grade: 1.5 },
+    { errorsPer200: 10, grade: 1.25 },
+    { errorsPer200: 10.5, grade: 1 },
+  ],
+  "3_m_KP": [
+    { errorsPer200: 0.5, grade: 6 },
+    { errorsPer200: 0.875, grade: 5.75 },
+    { errorsPer200: 1.25, grade: 5.5 },
+    { errorsPer200: 1.625, grade: 5.25 },
+    { errorsPer200: 2, grade: 5 },
+    { errorsPer200: 2.375, grade: 4.75 },
+    { errorsPer200: 2.75, grade: 4.5 },
+    { errorsPer200: 3.125, grade: 4.25 },
+    { errorsPer200: 3.5, grade: 4 },
+    { errorsPer200: 3.875, grade: 3.75 },
+    { errorsPer200: 4.25, grade: 3.5 },
+    { errorsPer200: 4.625, grade: 3.25 },
+    { errorsPer200: 5, grade: 3 },
+    { errorsPer200: 5.375, grade: 2.75 },
+    { errorsPer200: 5.75, grade: 2.5 },
+    { errorsPer200: 6.125, grade: 2.25 },
+    { errorsPer200: 6.5, grade: 2 },
+    { errorsPer200: 6.875, grade: 1.75 },
+    { errorsPer200: 7.25, grade: 1.5 },
+    { errorsPer200: 7.625, grade: 1.25 },
+    { errorsPer200: 8, grade: 1 },
+  ],
+  "4_m_KP": [
+    { errorsPer200: 0.5, grade: 6 },
+    { errorsPer200: 0.75, grade: 5.75 },
+    { errorsPer200: 1, grade: 5.5 },
+    { errorsPer200: 1.25, grade: 5.25 },
+    { errorsPer200: 1.5, grade: 5 },
+    { errorsPer200: 1.75, grade: 4.75 },
+    { errorsPer200: 2, grade: 4.5 },
+    { errorsPer200: 2.25, grade: 4.25 },
+    { errorsPer200: 2.5, grade: 4 },
+    { errorsPer200: 2.75, grade: 3.75 },
+    { errorsPer200: 3, grade: 3.5 },
+    { errorsPer200: 3.25, grade: 3.25 },
+    { errorsPer200: 3.5, grade: 3 },
+    { errorsPer200: 3.75, grade: 2.75 },
+    { errorsPer200: 4, grade: 2.5 },
+    { errorsPer200: 4.25, grade: 2.25 },
+    { errorsPer200: 4.5, grade: 2 },
+    { errorsPer200: 4.75, grade: 1.75 },
+    { errorsPer200: 5, grade: 1.5 },
+    { errorsPer200: 5.25, grade: 1.25 },
+    { errorsPer200: 5.5, grade: 1 },
+  ],
+};
 
 const ARGUMENTATION_BENCHMARK = [
   {
@@ -109,6 +302,7 @@ const ARGUMENTATION_BENCHMARK = [
 
 const API_ENDPOINT = "/api/ai-review";
 const API_HEALTH_ENDPOINT = "/api/health";
+const API_KEY_STORAGE_KEY = "aufsatzkorrekturtrainer_api_key";
 const PDF_CDN_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.min.js";
 const PDF_CDN_WORKER_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js";
 const PDF_LOCAL_URL = "/vendor/pdf.min.js";
@@ -118,11 +312,20 @@ const aiForm = document.getElementById("ai-form");
 const runtimeModeInput = document.getElementById("runtime-mode");
 const runtimeStatus = document.getElementById("runtime-status");
 const engineModeInput = document.getElementById("engine-mode");
+const apiKeyInput = document.getElementById("api-key-input");
+const saveApiKeyButton = document.getElementById("save-api-key");
+const clearApiKeyButton = document.getElementById("clear-api-key");
+const apiKeyStatus = document.getElementById("api-key-status");
 const apiStatus = document.getElementById("api-status");
 const fileInput = document.getElementById("essay-file");
 const parseButton = document.getElementById("parse-file");
 const parseStatus = document.getElementById("parse-status");
 const essayInput = document.getElementById("essay-input");
+const orthLevelInput = document.getElementById("orth-level");
+const orthErrorsInput = document.getElementById("orth-errors");
+const orthWordsInput = document.getElementById("orth-words");
+const orthCalculationOutput = document.getElementById("orth-calculation");
+const orthCommentInput = document.getElementById("orth-comment");
 const manualCriteriaContainer = document.getElementById("manual-criteria");
 const saveManualButton = document.getElementById("save-manual");
 const manualStatus = document.getElementById("manual-status");
@@ -131,6 +334,8 @@ const benchmarkSummary = document.getElementById("benchmark-summary");
 const partnerHeading = document.getElementById("partner-heading");
 const manualPartnerFeedback = document.getElementById("manual-partner-feedback");
 const runAiButton = document.getElementById("run-ai");
+const toggleApiForEssayButton = document.getElementById("toggle-api-for-essay");
+const essayApiStatus = document.getElementById("essay-api-status");
 const resultsSection = document.getElementById("ai-results");
 const cardsContainer = document.getElementById("ai-cards");
 const metricsContainer = document.getElementById("ai-metrics");
@@ -155,6 +360,7 @@ let manualDirty = true;
 let studentCounter = 0;
 let runtimeMode = "local";
 let pdfLibrarySource = null;
+let apiForCurrentEssayEnabled = false;
 let apiHealth = {
   reachable: false,
   configured: false,
@@ -167,8 +373,21 @@ saveManualButton.addEventListener("click", saveManualEvaluation);
 downloadButton.addEventListener("click", downloadSingleReport);
 essayInput.addEventListener("input", markManualAsDirty);
 runtimeModeInput.addEventListener("change", handleRuntimeModeChange);
+saveApiKeyButton.addEventListener("click", saveApiKeyFromInput);
+clearApiKeyButton.addEventListener("click", clearSavedApiKey);
+toggleApiForEssayButton.addEventListener("click", toggleApiForCurrentEssay);
 manualCriteriaContainer.addEventListener("input", markManualFormChanged);
 manualCriteriaContainer.addEventListener("change", markManualFormChanged);
+[orthLevelInput, orthErrorsInput, orthWordsInput, orthCommentInput].forEach((field) => {
+  field.addEventListener("input", () => {
+    updateOrthographyCalculation();
+    markManualFormChanged();
+  });
+  field.addEventListener("change", () => {
+    updateOrthographyCalculation();
+    markManualFormChanged();
+  });
+});
 
 addStudentButton.addEventListener("click", () => addStudentRow());
 evaluateClassButton.addEventListener("click", evaluateClassroom);
@@ -191,7 +410,10 @@ init();
 
 async function init() {
   buildManualCriteriaCards();
+  loadSavedApiKeyIntoInput();
   applyRuntimeMode(runtimeModeInput.value);
+  setEssayApiToggle(false);
+  updateOrthographyCalculation();
   addStudentRow();
   if (runtimeMode === "internet") {
     await checkApiHealth();
@@ -216,11 +438,11 @@ async function checkApiHealth() {
       model: payload.model || null,
     };
 
-    if (apiHealth.reachable && apiHealth.configured) {
+    if (apiHealth.reachable && (apiHealth.configured || hasClientApiKey())) {
       apiStatus.textContent = `API bereit (${apiHealth.model || "Modell konfiguriert"}).`;
     } else if (apiHealth.reachable) {
       apiStatus.textContent =
-        "API-Server erreichbar, aber API-Key fehlt. API-Modus bleibt deaktiviert und fällt lokal zurück.";
+        "API-Server erreichbar, aber kein API-Key gesetzt. Hinterlege den Schlüssel im Feld oben oder in .env.";
     } else {
       apiStatus.textContent =
         "API nicht erreichbar. Nur lokale KI-Bewertung verfügbar (z. B. in GitHub Pages).";
@@ -230,6 +452,60 @@ async function checkApiHealth() {
     apiStatus.textContent =
       "API nicht erreichbar. Nur lokale KI-Bewertung verfügbar (z. B. in GitHub Pages).";
   }
+}
+
+function loadSavedApiKeyIntoInput() {
+  try {
+    const stored = localStorage.getItem(API_KEY_STORAGE_KEY) || "";
+    if (stored) {
+      apiKeyInput.value = stored;
+      apiKeyStatus.textContent = "API-Key aus lokalem Speicher geladen.";
+      return;
+    }
+  } catch {
+    // Ignore storage issues and continue with empty key.
+  }
+  apiKeyStatus.textContent = "Kein API-Key gespeichert.";
+}
+
+function saveApiKeyFromInput() {
+  const key = apiKeyInput.value.trim();
+  if (!key) {
+    apiKeyStatus.textContent = "Bitte zuerst einen API-Key eingeben.";
+    return;
+  }
+
+  try {
+    localStorage.setItem(API_KEY_STORAGE_KEY, key);
+    apiKeyStatus.textContent = "API-Key lokal gespeichert.";
+  } catch {
+    apiKeyStatus.textContent = "API-Key konnte nicht gespeichert werden (Browser-Speicher blockiert).";
+  }
+
+  if (runtimeMode === "internet") {
+    checkApiHealth();
+  }
+}
+
+function clearSavedApiKey() {
+  apiKeyInput.value = "";
+  try {
+    localStorage.removeItem(API_KEY_STORAGE_KEY);
+  } catch {
+    // Ignore storage issues.
+  }
+  apiKeyStatus.textContent = "Gespeicherter API-Key wurde gelöscht.";
+  if (runtimeMode === "internet") {
+    checkApiHealth();
+  }
+}
+
+function getClientApiKey() {
+  return (apiKeyInput.value || "").trim();
+}
+
+function hasClientApiKey() {
+  return Boolean(getClientApiKey());
 }
 
 async function handleRuntimeModeChange() {
@@ -249,13 +525,54 @@ function applyRuntimeMode(mode) {
   if (runtimeMode === "local") {
     if (apiOption) apiOption.disabled = true;
     engineModeInput.value = "local";
+    setEssayApiToggle(false);
+    toggleApiForEssayButton.disabled = true;
+    studentList.querySelectorAll(".student-toggle-api").forEach((button) => {
+      button.disabled = true;
+      setStudentApiToggle(button, false);
+    });
+    apiStatus.textContent =
+      "Im Lokalmodus sind externe API-Aufrufe gesperrt. Für reine Offline-Nutzung bleibt die lokale KI aktiv.";
     runtimeStatus.textContent =
       "Lokalmodus aktiv: keine externen KI-Aufrufe. Verarbeitung bleibt lokal (heuristisch oder lokaler Endpoint).";
   } else {
     if (apiOption) apiOption.disabled = false;
+    toggleApiForEssayButton.disabled = false;
+    studentList.querySelectorAll(".student-toggle-api").forEach((button) => {
+      button.disabled = false;
+    });
     runtimeStatus.textContent =
       "Internetmodus aktiv: API-KI und externe Bibliotheken sind erlaubt.";
   }
+}
+
+function toggleApiForCurrentEssay() {
+  if (runtimeMode !== "internet") {
+    setEssayApiToggle(false);
+    parseStatus.textContent = "API-KI kann nur im Internetmodus aktiviert werden.";
+    return;
+  }
+  setEssayApiToggle(!apiForCurrentEssayEnabled);
+}
+
+function setEssayApiToggle(enabled) {
+  apiForCurrentEssayEnabled = Boolean(enabled);
+  toggleApiForEssayButton.textContent = `API-KI für diesen Aufsatz: ${
+    apiForCurrentEssayEnabled ? "AN" : "AUS"
+  }`;
+  toggleApiForEssayButton.classList.toggle("primary-btn", apiForCurrentEssayEnabled);
+  toggleApiForEssayButton.classList.toggle("secondary-btn", !apiForCurrentEssayEnabled);
+  essayApiStatus.textContent = apiForCurrentEssayEnabled
+    ? "Für diesen Aufsatz wird beim Start die externe API-KI genutzt (falls API erreichbar und Key vorhanden)."
+    : "Diese Aufsatzkorrektur läuft aktuell ohne externen API-Aufruf.";
+}
+
+function setStudentApiToggle(button, enabled) {
+  const on = Boolean(enabled);
+  button.dataset.apiEnabled = on ? "1" : "0";
+  button.classList.toggle("primary-btn", on);
+  button.classList.toggle("secondary-btn", !on);
+  button.textContent = `API-KI: ${on ? "AN" : "AUS"}`;
 }
 
 function buildManualCriteriaCards() {
@@ -297,7 +614,41 @@ function buildGradeOptions() {
   return options.join("");
 }
 
+function calculateOrthographyGrade(level, errors, words) {
+  if (!level || !LANGUAGE_TABLES[level] || !Number.isFinite(errors) || !Number.isFinite(words) || words <= 0) {
+    return null;
+  }
+
+  const errorsPer200 = (errors / words) * 200;
+  const table = LANGUAGE_TABLES[level];
+  const match = table.find((row) => errorsPer200 <= row.errorsPer200);
+  const row = match || table[table.length - 1];
+
+  return {
+    errorsPer200,
+    grade: row.grade,
+  };
+}
+
+function updateOrthographyCalculation() {
+  const level = orthLevelInput.value;
+  const errors = Number.parseFloat(orthErrorsInput.value);
+  const words = Number.parseFloat(orthWordsInput.value);
+  const result = calculateOrthographyGrade(level, errors, words);
+
+  if (!result) {
+    orthCalculationOutput.textContent = "Fehler pro 200 Wörter: – | Teilnote sprachliche Korrektheit: –";
+    return null;
+  }
+
+  orthCalculationOutput.textContent = `Fehler pro 200 Wörter: ${result.errorsPer200
+    .toFixed(2)
+    .replace(".", ",")} | Teilnote sprachliche Korrektheit: ${formatGrade(result.grade)}`;
+  return result;
+}
+
 function markManualAsDirty() {
+  setEssayApiToggle(false);
   manualDirty = true;
   runAiButton.disabled = true;
   downloadButton.disabled = true;
@@ -363,9 +714,38 @@ function saveManualEvaluation() {
     });
   }
 
+  const orthResult = updateOrthographyCalculation();
+  const orthComment = orthCommentInput.value.trim();
+  if (!orthResult) {
+    hasErrors = true;
+    orthLevelInput.classList.add("invalid");
+    orthErrorsInput.classList.add("invalid");
+    orthWordsInput.classList.add("invalid");
+  }
+  if (orthComment.length < 80) {
+    hasErrors = true;
+    orthCommentInput.classList.add("invalid");
+  }
+
+  criteria.push({
+    id: ORTHOGRAPHY.id,
+    label: ORTHOGRAPHY.label,
+    weight: ORTHOGRAPHY.weight,
+    grade: orthResult?.grade || 0,
+    comment: orthComment,
+    orthMeta: orthResult
+      ? {
+          level: orthLevelInput.value,
+          errors: Number.parseFloat(orthErrorsInput.value),
+          words: Number.parseFloat(orthWordsInput.value),
+          errorsPer200: orthResult.errorsPer200,
+        }
+      : null,
+  });
+
   if (hasErrors) {
     manualStatus.textContent =
-      "Bitte alle Teilnoten setzen und jede Begründung mit mindestens 80 Zeichen ausformulieren.";
+      "Bitte alle Teilnoten setzen, Orthografie über den Fehlerschlüssel ausfüllen und jede Begründung mit mindestens 80 Zeichen ausformulieren.";
     return;
   }
 
@@ -438,6 +818,10 @@ function saveManualEvaluation() {
 function clearManualInvalidMarkers() {
   manualCriteriaContainer.querySelectorAll(".invalid").forEach((field) => field.classList.remove("invalid"));
   essayInput.classList.remove("invalid");
+  orthLevelInput.classList.remove("invalid");
+  orthErrorsInput.classList.remove("invalid");
+  orthWordsInput.classList.remove("invalid");
+  orthCommentInput.classList.remove("invalid");
 }
 
 function evaluateCorrectionByBenchmark(criterionEvaluation) {
@@ -486,6 +870,8 @@ function buildPartnerComment(criterionEvaluation, benchmark) {
     inhalt: "Welche zentrale These des Aufsatzes trägt deine Teilnote am stärksten und warum genau diese?",
     aufbau: "An welcher Übergangsstelle kippt der rote Faden am deutlichsten?",
     ausdruck: "Welche konkrete Formulierung würdest du sprachlich umschreiben, um Präzision zu gewinnen?",
+    "sprachliche-korrektheit":
+      "Welche Fehlerkategorie (Orthografie/Interpunktion/Grammatik) prägt deine Teilnote am stärksten?",
   };
 
   const strengthParts = [];
@@ -654,24 +1040,31 @@ async function runAiCorrection(event) {
   }
 
   const levelSelection = getLevelSelection();
-  const requestedEngine = engineModeInput.value;
+  const requestedEngine = apiForCurrentEssayEnabled ? "api" : "local";
+  if (apiForCurrentEssayEnabled && runtimeMode === "internet" && !hasClientApiKey() && !apiHealth.configured) {
+    parseStatus.textContent =
+      "API-KI ist für diesen Aufsatz aktiviert, aber kein API-Key vorhanden. Bitte Key eingeben oder API-KI ausschalten.";
+    return;
+  }
 
   parseStatus.textContent = "Analyse läuft...";
 
   try {
     const evaluation = await evaluateEssay(text, levelSelection, requestedEngine, { scope: "single" });
+    const aiCriteriaWithOrthography = appendOrthographyCriterion(evaluation.criteria);
 
     renderMetrics(evaluation.metrics, levelSelection, evaluation);
-    renderCards(evaluation.criteria);
-    renderComparison(evaluation.criteria);
+    renderCards(aiCriteriaWithOrthography);
+    renderComparison(aiCriteriaWithOrthography);
 
     latestAiReport = {
       createdAt: new Date(),
       text,
       manual: manualEvaluation,
       metrics: evaluation.metrics,
-      criteria: evaluation.criteria,
+      criteria: aiCriteriaWithOrthography,
       levelSelection,
+      apiToggle: apiForCurrentEssayEnabled,
       source: evaluation.source,
       model: evaluation.model || null,
       summary: evaluation.summary || "",
@@ -697,10 +1090,11 @@ async function runAiCorrection(event) {
 async function evaluateEssay(text, levelSelection, requestedEngine, context = {}) {
   const metrics = computeGlobalMetrics(text);
   const effectiveEngine = runtimeMode === "local" ? "local" : requestedEngine;
+  const apiKey = getClientApiKey();
 
   if (effectiveEngine === "api") {
-    if (apiHealth.reachable && apiHealth.configured) {
-      const apiResult = await evaluateViaApi(text, levelSelection, context);
+    if (apiHealth.reachable && (apiHealth.configured || Boolean(apiKey))) {
+      const apiResult = await evaluateViaApi(text, levelSelection, context, apiKey);
       return {
         source: "api",
         model: apiResult.model || apiHealth.model || null,
@@ -732,7 +1126,7 @@ async function evaluateEssay(text, levelSelection, requestedEngine, context = {}
   };
 }
 
-async function evaluateViaApi(text, levelSelection, context = {}) {
+async function evaluateViaApi(text, levelSelection, context = {}, apiKey = "") {
   const response = await fetch(API_ENDPOINT, {
     method: "POST",
     headers: {
@@ -743,6 +1137,7 @@ async function evaluateViaApi(text, levelSelection, context = {}) {
       text,
       levelSelection,
       context,
+      apiKey,
     }),
   });
 
@@ -852,7 +1247,7 @@ function renderMetrics(metrics, levelSelection, evaluation) {
 function renderCards(criteria) {
   cardsContainer.innerHTML = criteria
     .map((criterion) => {
-      const selectedLevel = LEVEL_CONFIG[criterion.level].label;
+      const selectedLevel = LEVEL_CONFIG[criterion.level]?.label || criterion.level || "excel";
       const badgeClass = ["streng", "brutal"].includes(criterion.level) ? "badge warn" : "badge";
 
       return `
@@ -870,17 +1265,46 @@ function renderCards(criteria) {
     .join("");
 }
 
+function appendOrthographyCriterion(criteria) {
+  const existing = criteria.find((item) => item.id === ORTHOGRAPHY.id);
+  if (existing) return criteria;
+  if (!manualEvaluation) return criteria;
+
+  const manualOrth = manualEvaluation.criteria.find((item) => item.id === ORTHOGRAPHY.id);
+  if (!manualOrth) return criteria;
+
+  const orthCriterion = {
+    id: ORTHOGRAPHY.id,
+    label: ORTHOGRAPHY.label,
+    level: "excel",
+    score: manualOrth.grade,
+    moderateScore: manualOrth.grade,
+    deltaText: "0",
+    comment:
+      "Diese Teilnote wird analog zum Frisch-Modus direkt aus dem Excel-Fehlerschlüssel berechnet.",
+    strengths: [
+      manualOrth.orthMeta
+        ? `Fehlerdichte: ${manualOrth.orthMeta.errorsPer200.toFixed(2).replace(".", ",")} pro 200 Wörter.`
+        : "Fehlerdichte wurde eingetragen.",
+    ],
+    gaps: [],
+    nextStep: "Fehlerkategorien gezielt benennen (Orthografie/Interpunktion/Grammatik) und priorisieren.",
+  };
+
+  return [...criteria, orthCriterion];
+}
+
 function renderComparison(aiCriteria) {
   if (!manualEvaluation) {
     comparisonBlock.hidden = true;
     return;
   }
 
-  const rows = CRITERIA.map((criterion) => {
-    const manual = manualEvaluation.criteria.find((item) => item.id === criterion.id);
-    const benchmark = manualEvaluation.benchmark.find((item) => item.id === criterion.id);
-    const ai = aiCriteria.find((item) => item.id === criterion.id);
-    const delta = (ai?.score || 0) - (manual?.grade || 0);
+  const rows = manualEvaluation.criteria.map((manual) => {
+    const benchmark = manualEvaluation.benchmark.find((item) => item.id === manual.id);
+    const ai = aiCriteria.find((item) => item.id === manual.id);
+    const aiScore = ai?.score ?? manual.grade;
+    const delta = aiScore - (manual?.grade || 0);
     const trend =
       Math.abs(delta) < 0.01
         ? "gleich"
@@ -889,9 +1313,11 @@ function renderComparison(aiCriteria) {
           : "AI strenger";
 
     return {
-      label: criterion.label,
+      id: manual.id,
+      label: manual.label,
+      weight: manual.weight,
       manual: manual?.grade || 0,
-      ai: ai?.score || 0,
+      ai: aiScore,
       delta,
       trend,
       manualComment: manual?.comment || "",
@@ -903,10 +1329,7 @@ function renderComparison(aiCriteria) {
   });
 
   const manualAvg = manualEvaluation.weightedAverage;
-  const aiAvg = rows.reduce((sum, row) => {
-    const weight = CRITERIA.find((criterion) => criterion.label === row.label)?.weight || 0;
-    return sum + row.ai * weight;
-  }, 0);
+  const aiAvg = rows.reduce((sum, row) => sum + row.ai * row.weight, 0);
   const overallDelta = aiAvg - manualAvg;
 
   comparisonTable.innerHTML = `
@@ -988,6 +1411,7 @@ function addStudentRow(initialData = {}) {
         <input type="file" class="student-file" accept=".txt,.pdf,application/pdf,text/plain" />
       </label>
       <button type="button" class="secondary-btn student-read-file">Datei einlesen</button>
+      <button type="button" class="secondary-btn student-toggle-api">API-KI: AUS</button>
     </div>
     <label>
       Aufsatztext
@@ -997,12 +1421,20 @@ function addStudentRow(initialData = {}) {
   `;
 
   studentList.appendChild(row);
+  const toggleButton = row.querySelector(".student-toggle-api");
+  if (runtimeMode !== "internet") {
+    toggleButton.disabled = true;
+    setStudentApiToggle(toggleButton, false);
+  } else {
+    setStudentApiToggle(toggleButton, false);
+  }
 }
 
 async function handleStudentListClick(event) {
   const target = event.target;
   const row = target.closest(".student-row");
   if (!row) return;
+  const status = row.querySelector(".student-status");
 
   if (target.classList.contains("student-remove")) {
     if (studentList.querySelectorAll(".student-row").length === 1) {
@@ -1018,7 +1450,6 @@ async function handleStudentListClick(event) {
 
   if (target.classList.contains("student-read-file")) {
     const fileInputRow = row.querySelector(".student-file");
-    const status = row.querySelector(".student-status");
     const textArea = row.querySelector(".student-text");
     const file = fileInputRow.files?.[0];
 
@@ -1036,6 +1467,24 @@ async function handleStudentListClick(event) {
     } catch (error) {
       status.textContent = `Fehler: ${error.message}`;
     }
+    return;
+  }
+
+  if (target.classList.contains("student-toggle-api")) {
+    if (runtimeMode !== "internet") {
+      status.textContent = "API-KI pro Aufsatz ist nur im Internetmodus verfügbar.";
+      target.classList.add("secondary-btn");
+      target.classList.remove("primary-btn");
+      target.textContent = "API-KI: AUS";
+      return;
+    }
+
+    const enabled = target.dataset.apiEnabled === "1";
+    const next = !enabled;
+    setStudentApiToggle(target, next);
+    status.textContent = next
+      ? "Für diesen Aufsatz wird API-KI verwendet."
+      : "Für diesen Aufsatz wird lokale KI verwendet.";
   }
 }
 
@@ -1045,7 +1494,8 @@ async function evaluateClassroom() {
     .map((row, index) => {
       const name = row.querySelector(".student-name").value.trim() || `Schüler*in ${index + 1}`;
       const text = row.querySelector(".student-text").value.trim();
-      return { row, name, text };
+      const useApi = row.querySelector(".student-toggle-api")?.dataset.apiEnabled === "1";
+      return { row, name, text, useApi };
     })
     .filter((entry) => entry.text.length >= 200);
 
@@ -1055,12 +1505,12 @@ async function evaluateClassroom() {
   }
 
   const levelSelection = getLevelSelection();
-  const requestedEngine = engineModeInput.value;
   const results = [];
 
   for (let index = 0; index < entries.length; index += 1) {
     const entry = entries[index];
     const status = entry.row.querySelector(".student-status");
+    const requestedEngine = entry.useApi ? "api" : "local";
     classStatus.textContent = `Klassenkorrektur läuft: ${index + 1}/${entries.length} (${entry.name})`;
     status.textContent = "Analyse läuft...";
 
@@ -1101,7 +1551,7 @@ async function evaluateClassroom() {
   latestClassReport = {
     createdAt: new Date(),
     levelSelection,
-    requestedEngine,
+    requestedEngine: "mixed-per-essay",
     students: results,
   };
 
@@ -1463,6 +1913,7 @@ function downloadSingleReport() {
   lines.push("");
   lines.push(`- Datum: ${latestAiReport.createdAt.toLocaleString("de-CH")}`);
   lines.push(`- Betriebsmodus: ${runtimeMode === "local" ? "lokal/abgeschottet" : "internet"}`);
+  lines.push(`- API-KI-Schalter (dieser Aufsatz): ${latestAiReport.apiToggle ? "AN" : "AUS"}`);
   lines.push(`- Engine: ${latestAiReport.source}${latestAiReport.model ? ` (${latestAiReport.model})` : ""}`);
   lines.push(`- Wörter: ${latestAiReport.metrics.wordCount}`);
   lines.push(`- Sätze: ${latestAiReport.metrics.sentenceCount}`);

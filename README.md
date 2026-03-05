@@ -13,6 +13,7 @@ Interaktive Lern- und Feedbackumgebung mit drei Nutzungsszenarien:
 - automatische Teilnote sprachliche Korrektheit nach Excel-Schlüssel (Stufe 1-4, mit/ohne Korrekturprogramm)
 - KI-Korrektur für `Inhalt`, `Aufbau`, `Ausdruck`
 - verpflichtende manuelle Erstkorrektur für freie Aufsätze vor der AI-Analyse
+- freie Aufsätze inkl. **sprachlicher Korrektheit nach Excel-Schlüssel** (Stufe, Fehler, Wörter, automatische Teilnote)
 - direkte Vergleichsansicht `manuell vs. AI` je Kriterium inklusive Delta
 - KI-Partnerkommentar zur manuellen Korrektur (Stärke, Lücke, Partnerfrage, Satzvorschlag)
 - Argumentationslehre-Gradmesser für Korrektur-Korrektheit (These, Begründung, Beleg, Einwand, Entkräftung, Schluss, Logik, Fairness)
@@ -23,6 +24,8 @@ Interaktive Lern- und Feedbackumgebung mit drei Nutzungsszenarien:
 - zuschaltbarer Betriebsmodus:
   - `Lokal/abgeschottet` (kein externer KI-Versand)
   - `Voller Internetzugang` (API-KI und externe Quellen möglich)
+- API-Key direkt in der Oberfläche eintragbar (lokal gespeichert)
+- pro Aufsatz ein eigener Button `API-KI AN/AUS`
 
 ## Start lokal (ohne API, lokale KI)
 
@@ -59,6 +62,14 @@ npm start
 
 5. Browser öffnen: `http://localhost:8080/ai-korrektur.html`
 6. In der Oberfläche den Betriebsmodus auf `Voller Internetzugang` stellen.
+7. API-Key im Feld `API-Key (für echte KI-Korrektur)` eintragen und speichern.
+8. Pro Aufsatz per Button `API-KI für diesen Aufsatz: AN` aktivieren.
+9. Im Klassenmodus kann pro Schüleraufsatz separat `API-KI: AN/AUS` gesetzt werden.
+
+Hinweis:
+
+- Der API-Key kann alternativ in `.env` stehen oder direkt pro Browser im UI hinterlegt werden.
+- Für UI-API-Key und API-Korrektur muss die App über `npm start` laufen (nicht nur als reine statische Datei).
 
 API-Endpunkte:
 

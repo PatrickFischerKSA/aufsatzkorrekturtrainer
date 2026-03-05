@@ -34,6 +34,7 @@ const server = createServer(async (req, res) => {
       return json(res, 200, {
         ok: true,
         configured: Boolean(OPENAI_API_KEY),
+        acceptsClientKey: true,
         model: OPENAI_MODEL,
         baseUrl: OPENAI_BASE_URL,
       });
@@ -59,13 +60,16 @@ server.listen(PORT, "127.0.0.1", () => {
 });
 
 async function handleAiReview(req, res) {
-  if (!OPENAI_API_KEY) {
+  const body = await readJsonBody(req);
+  const clientApiKey = String(body.apiKey || "").trim();
+  const effectiveApiKey = clientApiKey || OPENAI_API_KEY;
+
+  if (!effectiveApiKey) {
     return json(res, 503, {
-      error: "OPENAI_API_KEY fehlt. Bitte in .env setzen.",
+      error: "API-Key fehlt. Bitte in der Oberfläche eingeben oder in .env setzen.",
     });
   }
 
-  const body = await readJsonBody(req);
   const text = String(body.text || "").trim();
   const levelSelection = body.levelSelection || {};
 
@@ -113,7 +117,7 @@ async function handleAiReview(req, res) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      Authorization: `Bearer ${effectiveApiKey}`,
     },
     body: JSON.stringify({
       model: OPENAI_MODEL,

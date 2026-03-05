@@ -53,7 +53,21 @@
                   <option value="api">API-KI (LLM-Backend)</option>
                 </select>
               </label>
+              <label>
+                API-Key (für echte KI-Korrektur)
+                <input
+                  id="api-key-input"
+                  type="password"
+                  autocomplete="off"
+                  placeholder="sk-... oder kompatibler Schlüssel"
+                />
+              </label>
+              <div class="actions">
+                <button type="button" id="save-api-key" class="secondary-btn">API-Key speichern</button>
+                <button type="button" id="clear-api-key" class="ghost-btn">API-Key löschen</button>
+              </div>
             </div>
+            <p class="hint" id="api-key-status">Kein API-Key gespeichert.</p>
             <p class="hint" id="api-status">
               API-Status wird geprüft...
             </p>
@@ -91,6 +105,44 @@
             Begründung, Beleg, Einwand, Entkräftung, Schluss, Logik, Fairness).
           </p>
           <div id="manual-criteria" class="criteria-container"></div>
+          <fieldset class="language-box">
+            <legend>Sprachliche Korrektheit nach Excel-Schlüssel</legend>
+            <div class="field-grid">
+              <label>
+                Gym-/FMS-Stufe
+                <select id="orth-level" required>
+                  <option value="">Bitte wählen</option>
+                  <option value="1">1 (ohne Korrekturprogramm)</option>
+                  <option value="1_m_KP">1 mit Korrekturprogramm</option>
+                  <option value="2">2 (ohne Korrekturprogramm)</option>
+                  <option value="2_m_KP">2 mit Korrekturprogramm</option>
+                  <option value="3">3 (ohne Korrekturprogramm)</option>
+                  <option value="3_m_KP">3 mit Korrekturprogramm</option>
+                  <option value="4">4 (ohne Korrekturprogramm)</option>
+                  <option value="4_m_KP">4 mit Korrekturprogramm</option>
+                </select>
+              </label>
+              <label>
+                Anzahl Fehler
+                <input id="orth-errors" type="number" min="0" step="0.5" required />
+              </label>
+              <label>
+                Anzahl Wörter
+                <input id="orth-words" type="number" min="1" step="1" required />
+              </label>
+            </div>
+            <p class="calculation-note" id="orth-calculation">
+              Fehler pro 200 Wörter: – | Teilnote sprachliche Korrektheit: –
+            </p>
+            <label>
+              Begründung sprachliche Korrektheit (mind. 80 Zeichen)
+              <textarea
+                id="orth-comment"
+                minlength="80"
+                placeholder="Begründe die Orthografie-Teilnote mit Fehlerkategorien und Gewichtung."
+              ></textarea>
+            </label>
+          </fieldset>
           <div class="actions">
             <button type="button" id="save-manual" class="primary-btn">
               Manuelle Korrektur speichern
@@ -103,6 +155,14 @@
           <div id="manual-partner-feedback" class="criteria-feedback" hidden></div>
 
           <h3>2. AI-Korrektur (Vergleich)</h3>
+          <div class="actions">
+            <button type="button" id="toggle-api-for-essay" class="secondary-btn">
+              API-KI für diesen Aufsatz: AUS
+            </button>
+          </div>
+          <p class="hint" id="essay-api-status">
+            Diese Aufsatzkorrektur läuft aktuell ohne externen API-Aufruf.
+          </p>
           <p class="hint">
             Die Levels steuern Tonalität und Strenge der KI-Rückmeldung je Kriterium.
           </p>
